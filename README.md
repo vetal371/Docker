@@ -1,2 +1,2 @@
 # DockerFiles
-Docker files for some Linux Servers
+Docker files for some Linux servers
