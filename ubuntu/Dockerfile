@@ -1,2 +1,2 @@
-MAINTAINER <Vitaliy T>
 FROM ubuntu
+MAINTAINER <Vitaliy T>
