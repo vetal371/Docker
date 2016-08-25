@@ -1,2 +1,2 @@
-MAINTAINER <Vitaliy T>
 FROM debian
+MAINTAINER <Vitaliy T>
