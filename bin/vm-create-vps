@@ -1,0 +1,48 @@
+#!/bin/bash
+
+VM_CONFIG=$1
+
+if [ "$VM_CONFIG" = "" ]; then
+	echo "[ERROR:] Please specify VM config file"
+	exit 1
+fi
+
+if [ ! -f $VM_CONFIG ]; then
+	echo "[ERROR:] The config file $VM_CONFIG does not exist"
+	exit 1
+fi
+
+source $VM_CONFIG
+
+echo "VM_NAME=$VM_NAME"
+echo "VM_IP=$VM_IP"
+
+echo "VM_IMAGE=$VM_IMAGE"
+echo "VM_CMD=$VM_CMD"
+
+echo "HOST_IF=$HOST_IF"
+echo "VM_IF=$VM_IF"
+echo ""
+
+# Создаем контейнер без сети:
+echo "docker run $CREATEVM_OPTS"
+docker run $CREATEVM_OPTS
+
+# Создаем Net NameSpace:
+vpspid=`docker inspect -f '{{ .State.Pid }}' $VM_NAME`
+mkdir -p /var/run/netns
+ln -s /proc/$vpspid/ns/net /var/run/netns/$vpspid
+
+ip link add $HOST_IF type veth peer name $VM_IF
+ip link set $HOST_IF up
+
+ovs-vsctl add-port $VM_BRIDGE $HOST_IF
+ip link set $VM_IF netns $vpspid
+
+## В контейнере переименовываем, поднимаем и настраиваем линк:    
+ip netns exec $vpspid ip link set dev $VM_IF name eth0
+ip netns exec $vpspid ip link set dev eth0 up
+
+  #ip netns exec $vpspid ip link set eth0 address 12:34:56:78:9a:bc
+ip netns exec $vpspid ip addr add ${VM_IP}${VM_MASK} dev eth0
+ip netns exec $vpspid ip route add default via $VM_GW

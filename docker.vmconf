@@ -1,0 +1,30 @@
+COMPANY_DOMAIN="vivasent.com"
+
+ VM_NAME="vm244.244"
+   VM_IP="172.30.244.244"
+ VM_MASK="/16"
+   VM_GW="172.30.0.1"
+VM_IMAGE="db-datanode1.dc:XL9_5_STABLE"
+  VM_CMD="/bin/bash"
+
+ HOST_IF="172.30.244.244"
+   VM_IF="vm244.244"
+
+HOST_DIR="/var/lib/docker/vm/vm244.244"
+  VM_DIR="/usr/local/pgsql/data"
+
+VM_BRIDGE="ovs.sw-VMs"
+
+
+VM_FLAGS="-itd"
+
+CREATEVM_OPTS="
+	$VM_FLAGS
+	--net=none
+	--name $VM_NAME
+	-v $HOST_DIR:$VM_DIR
+	-h $VM_NAME.$COMPANY_DOMAIN
+	$VM_IMAGE
+	$VM_CMD
+	"
+
