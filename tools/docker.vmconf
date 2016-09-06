@@ -1,0 +1,16 @@
+
+
+
+
+
+
+VAR1="container1"
+VAR2="ver124"
+
+
+
+CREATEVM_OPTS="
+	--var1=${VAR1}
+	--var2=${VAR2}
+	"
+
