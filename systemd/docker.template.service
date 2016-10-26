@@ -1,0 +1,55 @@
+[Unit]
+Description=DEBIAN container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Environment=VM_NAME="DEBIAN"
+Environment=VM_IP="172.30.1.27"
+Environment=VM_IMAGE="jenkins:new"
+
+Environment=HOST_DIR="/var/lib/docker/vm/jenkins/data"
+Environment=VM_DIR="/var/lib/jenkins"
+
+Environment=HOST_IF="172.30.1.27"
+Environment=VM_IF="vm.1.27"
+
+Environment=VM_MASK="/16"
+Environment=VM_GW="172.30.0.1"
+
+Environment=VM_BRIDGE="ovs.sw-VMs"
+Environment=VM_CMD="/bin/bash"
+Environment=COMPANY_DOMAIN="dc.vivasent.com"
+Environment=VM_FLAGS="-itd"
+
+#----------------------------------------------------
+Restart=always
+ExecStart=
+ExecStart=/usr/bin/docker start $VM_NAME
+
+### Create Network Namespace
+ExecStartPost=/bin/mkdir -p /var/run/netns
+ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /bin/ln -s /proc/$VM_PID/ns/net /var/run/netns/$VM_PID"
+
+### Create IP link
+ExecStartPost=/bin/sh -c "/sbin/ip link add $HOST_IF type veth peer name $VM_IF"
+ExecStartPost=/bin/sh -c "/sbin/ip link set $HOST_IF up"
+
+ExecStartPost=/bin/sh -c "/usr/bin/ovs-vsctl add-port $VM_BRIDGE $HOST_IF"
+ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /sbin/ip link set $VM_IF netns $VM_PID"
+
+### Rename, Up, Setting up link in container
+ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /sbin/ip netns exec $VM_PID ip link set dev $VM_IF name eth0"
+ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /sbin/ip netns exec $VM_PID ip link set dev eth0 up"
+
+#ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /sbin/ip netns exec $VM_PID ip link set eth0 address 12:34:56:78:9a:bc"
+ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /sbin/ip netns exec $VM_PID ip addr add ${VM_IP}${VM_MASK} dev eth0"
+ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /sbin/ip netns exec $VM_PID ip route add default via $VM_GW"
+
+
+#ExecStart=/usr/bin/docker start -a redis_server
+#ExecStop=/usr/bin/docker stop -t 2 redis_server
+
+[Install]
+WantedBy=default.target
+
