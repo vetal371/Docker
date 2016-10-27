@@ -1,0 +1,31 @@
+#!/bin/bash
+
+VM_CONFIG=$1
+
+if [ "$VM_CONFIG" = "" ]; then
+	echo "[ERROR:] Please specify VM config file"
+	exit 1
+fi
+
+if [ ! -f $VM_CONFIG ]; then
+	echo "[ERROR:] The config file $VM_CONFIG does not exist"
+	exit 1
+fi
+
+source $VM_CONFIG
+
+echo "VM_NAME=$VM_NAME"
+echo "VM_IP=$VM_IP"
+
+echo "VM_IMAGE=$VM_IMAGE"
+echo "VM_CMD=$VM_CMD"
+
+echo "HOST_IF=$HOST_IF"
+echo "VM_IF=$VM_IF"
+echo ""
+
+vpspid=`docker inspect -f '{{ .State.Pid }}' $VM_NAME`
+ip link delete $HOST_IF
+ovs-vsctl del-port $VM_BRIDGE $HOST_IF
+
+unlink /var/run/netns/$vpspid
