@@ -19,7 +19,7 @@ Environment=VM_GW=172.30.0.1
 
 Environment=VM_BRIDGE=ovs.sw-VMs
 Environment=VM_CMD=/bin/bash
-Environment=COMPANY_DOMAIN=dc.vivasent.com
+Environment=COMPANY_DOMAIN=dc.company.com
 Environment=VM_FLAGS=-itd
 
 Restart=always
