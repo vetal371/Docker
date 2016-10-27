@@ -54,8 +54,6 @@ ExecStop=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_N
 ExecStop=/usr/bin/docker stop -t 2 $VM_NAME
 ExecStopPost=/bin/sh -c "/usr/bin/ovs-vsctl del-port $VM_BRIDGE $HOST_IF"
 
-
-
 [Install]
 WantedBy=default.target
 
