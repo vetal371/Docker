@@ -28,8 +28,7 @@ Restart=always
 
 #------------------------ Start ----------------------------
 
-ExecStart=
-ExecStart=/usr/bin/docker start $VM_NAME
+ExecStart=/usr/bin/docker start -a $VM_NAME
 
 ### Create Network Namespace
 ExecStartPost=/bin/mkdir -p /var/run/netns
@@ -50,19 +49,13 @@ ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' 
 
 
 
+#------------------------  Stop  ---------------------------
+
+ExecStop=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /usr/bin/unlink /var/run/netns/$VM_PID"
+ExecStop=/usr/bin/docker stop -t 2 $VM_NAME
+ExecStopPost=/bin/sh -c "/usr/bin/ovs-vsctl del-port $VM_BRIDGE $HOST_IF"
 
 
-
-
-
-
-
-
-
-
-
-#ExecStart=/usr/bin/docker start -a redis_server
-#ExecStop=/usr/bin/docker stop -t 2 redis_server
 
 [Install]
 WantedBy=default.target
