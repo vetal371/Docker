@@ -33,7 +33,7 @@ ExecStart=/usr/bin/docker start -a $VM_NAME
 
 ### Create Network Namespace
 ExecStartPost=/bin/mkdir -p /var/run/netns
-ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /bin/ln -s /proc/$VM_PID/ns/net /var/run/netns/$VM_PID"
+ExecStartPost=/bin/sh -c "sleep 1; VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /bin/ln -s /proc/$VM_PID/ns/net /var/run/netns/$VM_PID"
 ### Create and UP IP link on HOST server
 ExecStartPost=/bin/sh -c "/sbin/ip link add $HOST_IF type veth peer name $VM_IF"
 ExecStartPost=/bin/sh -c "/sbin/ip link set $HOST_IF up"
@@ -47,6 +47,10 @@ ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' 
 #ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /sbin/ip netns exec $VM_PID ip link set eth0 address 12:34:56:78:9a:bc"
 ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /sbin/ip netns exec $VM_PID ip addr add ${VM_IP}${VM_MASK} dev eth0"
 ExecStartPost=/bin/sh -c "VM_PID=`/usr/bin/docker inspect -f '{{ .State.Pid }}' $VM_NAME`; /sbin/ip netns exec $VM_PID ip route add default via $VM_GW"
+
+# ---------------------- Services --------------------------
+#  put here some commands...
+
 
 #------------------------  Stop  ---------------------------
 
